@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Comb
@@ -25,21 +26,29 @@ namespace Comb
 
     public class Program
     {
+        private const string InputFile = "input.txt";
+        private const string OutputFile = "output.txt";
         private const int LastElement = 32767;
 
-        private static List<int> ReadInput()
+
+        private static List<int> ReadInput(out int vertexCount)
         {
-            var arr = new List<int>();
-            IEnumerable<int> newLine;
-
-            do
+            using (var file = new StreamReader(InputFile))
             {
-                newLine = Console.ReadLine().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse);
-                arr.AddRange(newLine);
+                var n = int.Parse(file.ReadLine());
+                var arr = new List<int>();
+                IEnumerable<int> newLine;
 
-            } while (newLine.Last() != LastElement);
+                do
+                {
+                    newLine = file.ReadLine().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse);
+                    arr.AddRange(newLine);
 
-            return arr;
+                } while (newLine.Last() != LastElement);
+
+                vertexCount = arr.FindIndex(i => i == n);
+                return arr;
+            }
         }
 
         private static void Merge(int v, int w, int p, int q, int[] name, int[] next, int[] size)
@@ -115,10 +124,9 @@ namespace Comb
 
         public static void Main(string[] args)
         {
-            var n = int.Parse(Console.ReadLine());
-            var arr = ReadInput();
+            int vertexCount;
+            var arr = ReadInput(out vertexCount);
 
-            var vertexCount = arr.FindIndex(i => i == n);
             var edges = new List<Edge>();
 
             for (var i = 0; i < vertexCount; i++)
@@ -132,12 +140,15 @@ namespace Comb
 
             // output
 
-            for (var i = 0; i < vertexCount; i++)
+            using (var file = new StreamWriter(OutputFile))
             {
-                result[i].Sort();
-                Console.WriteLine(string.Join(" ", result[i].Select(v => v + 1))+ " 0");
+                for (var i = 0; i < vertexCount; i++)
+                {
+                    result[i].Sort();
+                    file.WriteLine(string.Join(" ", result[i].Select(v => v + 1))+ " 0");
+                }
+                file.WriteLine(minSpanningTree.Sum(e => e.Weight));
             }
-            Console.WriteLine(minSpanningTree.Sum(e => e.Weight));
         }
     }
 }
